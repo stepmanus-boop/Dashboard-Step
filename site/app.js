@@ -15,7 +15,6 @@ const state = {
 };
 
 const bodyEl = document.getElementById("projects-body");
-const tableShellEl = document.getElementById("table-shell");
 const detailCardEl = document.getElementById("detail-card");
 const sheetNameEl = document.getElementById("sheet-name");
 const lastSyncEl = document.getElementById("last-sync");
@@ -39,8 +38,22 @@ function formatPercent(value) {
 
 function uiStateLabel(stateValue) {
   if (stateValue === "completed") return "Concluído";
-  if (stateValue === "in_progress") return "Em andamento";
+  if (stateValue === "in_progress") return "Em produção";
   return "Não iniciado";
+}
+
+function translateProjectStatus(projectStatus, uiState) {
+  const normalized = String(projectStatus || "").trim().toUpperCase().replace(/\s+/g, " ");
+  if (["ONGOING", "ON GOING", "IN PROGRESS", "EM PRODUCAO", "EM PRODUÇÃO"].includes(normalized)) {
+    return "Em produção";
+  }
+  if (["ON HOLD", "HOLD", "PAUSED", "EM ESPERA"].includes(normalized)) {
+    return "Em espera";
+  }
+  if (["COMPLETED", "DONE", "FINISHED", "CONCLUIDO", "CONCLUÍDO"].includes(normalized)) {
+    return "Concluído";
+  }
+  return projectStatus || uiStateLabel(uiState);
 }
 
 function stageStatusClass(status) {
@@ -100,11 +113,14 @@ function renderTable() {
   bodyEl.innerHTML = state.projects
     .map((project, index) => {
       const isActive = index === state.activeIndex;
+      const statusText = translateProjectStatus(project.projectStatus, project.uiState);
       const rowClass = [
         project.uiState === "completed" ? "completed-row" : "",
         project.uiState === "in_progress" ? "in-progress-row" : "not-started-row",
         isActive ? "active-row" : "",
-      ].join(" ");
+      ]
+        .filter(Boolean)
+        .join(" ");
 
       const milestoneMap = Object.fromEntries((project.milestones || []).map((item) => [item.key, item.value]));
       const completedSymbol = project.finished ? "✓" : "✕";
@@ -123,7 +139,7 @@ function renderTable() {
           </td>
           <td>${formatPercent(project.individualProgress)}</td>
           <td>${formatPercent(project.overallProgress)}</td>
-          <td class="cell-status cell-status--${project.uiState}">${project.projectStatus || uiStateLabel(project.uiState)}</td>
+          <td class="cell-status cell-status--${project.uiState}">${statusText}</td>
           <td>${milestoneMap["Fabrication Start Date"] || "—"}</td>
           <td>${milestoneMap["Boilermaker Finish Date"] || "—"}</td>
           <td>${milestoneMap["Welding Finish Date"] || "—"}</td>
@@ -218,77 +234,87 @@ function renderDetail() {
   }
 
   const spoolRows = renderSpoolRows(project);
+  const statusText = translateProjectStatus(project.projectStatus, project.uiState);
 
   detailCardEl.innerHTML = `
-    <div class="detail-project-title">
-      <div>
-        <p class="detail-project-subtitle">Projeto em rotação automática</p>
-        <h3>${project.projectDisplay}</h3>
+    <section class="detail-hero">
+      <div class="detail-project-title">
+        <div>
+          <p class="detail-project-subtitle">Projeto em rotação automática</p>
+          <h3>${project.projectDisplay}</h3>
+        </div>
+        <span class="badge badge--${project.uiState}">${statusText}</span>
       </div>
-      <span class="badge badge--${project.uiState}">${project.projectStatus || uiStateLabel(project.uiState)}</span>
-    </div>
 
-    <div class="detail-grid">
-      <div class="metric-chip">
-        <span>Qtd. spools</span>
-        <strong>${formatNumber(project.quantitySpools)}</strong>
-      </div>
-      <div class="metric-chip">
-        <span>Peso total</span>
-        <strong>${formatNumber(project.kilos, 2)}</strong>
-      </div>
-      <div class="metric-chip">
-        <span>Painting total</span>
-        <strong>${formatNumber(project.m2Painting, 3)}</strong>
-      </div>
-      <div class="metric-chip">
-        <span>% Individual</span>
-        <strong>${formatPercent(project.individualProgress)}</strong>
-      </div>
-      <div class="metric-chip">
-        <span>% Geral</span>
-        <strong>${formatPercent(project.overallProgress)}</strong>
-      </div>
-      <div class="metric-chip">
-        <span>Spools</span>
-        <strong>${project.spoolStats.completed}/${project.spoolStats.total} concluídos</strong>
-      </div>
-    </div>
+      <div class="detail-hero-body">
+        <div class="current-stage-box ${project.currentStageAlert ? "alert" : ""}">
+          <div class="current-stage-head">
+            <span class="current-stage-label">Etapa atual</span>
+            <span class="stage-progress">${formatPercent(project.currentStagePercent)}</span>
+          </div>
+          <div class="stage-pill">
+            <span class="stage-dot stage-dot--${stageStatusClass(project.currentStageStatus)}"></span>
+            <span class="stage-name">${project.currentStage}</span>
+          </div>
+          <div class="current-stage-meta">O alerta fica ativo quando a etapa ainda não atingiu 100%.</div>
+        </div>
 
-    <div class="current-stage-box ${project.currentStageAlert ? "alert" : ""}">
-      <div class="stage-pill">
-        <span class="stage-dot stage-dot--${stageStatusClass(project.currentStageStatus)}"></span>
-        <span class="stage-name">${project.currentStage}</span>
+        <div class="detail-grid">
+          <div class="metric-chip">
+            <span>Qtd. spools</span>
+            <strong>${formatNumber(project.quantitySpools)}</strong>
+          </div>
+          <div class="metric-chip">
+            <span>Peso total</span>
+            <strong>${formatNumber(project.kilos, 2)}</strong>
+          </div>
+          <div class="metric-chip">
+            <span>Painting total</span>
+            <strong>${formatNumber(project.m2Painting, 3)}</strong>
+          </div>
+          <div class="metric-chip">
+            <span>% Individual</span>
+            <strong>${formatPercent(project.individualProgress)}</strong>
+          </div>
+          <div class="metric-chip">
+            <span>% Geral</span>
+            <strong>${formatPercent(project.overallProgress)}</strong>
+          </div>
+          <div class="metric-chip">
+            <span>Spools concluídos</span>
+            <strong>${project.spoolStats.completed}/${project.spoolStats.total}</strong>
+          </div>
+        </div>
       </div>
-      <div class="stage-meta">Etapa atual do projeto • ${formatPercent(project.currentStagePercent)}</div>
-    </div>
+    </section>
 
-    <div class="milestone-list">
+    <section class="milestone-list">
       ${renderMilestones(project)}
-    </div>
+    </section>
 
-    <div class="spool-panel">
+    <section class="spool-panel">
       <div class="spool-panel-head">
-        <h4>Spools / ISO</h4>
+        <h4>Spools / ISO do projeto</h4>
         <div class="spool-page-indicator">Página ${spoolRows.indicator}</div>
       </div>
-
-      <table class="spool-table">
-        <thead>
-          <tr>
-            <th>ISO</th>
-            <th>Descrição</th>
-            <th>Peso</th>
-            <th>Painting</th>
-            <th>Etapa</th>
-            <th>% Geral</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${spoolRows.rows}
-        </tbody>
-      </table>
-    </div>
+      <div class="spool-table-wrap">
+        <table class="spool-table">
+          <thead>
+            <tr>
+              <th>ISO</th>
+              <th>Descrição</th>
+              <th>Peso</th>
+              <th>Painting</th>
+              <th>Etapa</th>
+              <th>% Geral</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${spoolRows.rows}
+          </tbody>
+        </table>
+      </div>
+    </section>
   `;
 }
 
@@ -302,7 +328,7 @@ function updateMeta() {
 function scrollActiveRowIntoView() {
   const row = bodyEl.querySelector(`tr[data-project-index="${state.activeIndex}"]`);
   if (!row) return;
-  row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  row.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
 }
 
 function restartProjectRotation() {
