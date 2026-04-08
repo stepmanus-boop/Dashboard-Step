@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STEP • Progress Tracking Dashboard</title>
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand-card">
+          <img src="./assets/step-logo.png" alt="STEP Integrated Solutions" class="brand-logo" />
+        </div>
+
+        <div class="title-block">
+          <p class="eyebrow">Painel online para TV corporativa</p>
+          <h1>PROGRESS TRACKING DASHBOARD</h1>
+          <p class="subtitle">PIPING FABRICATION</p>
+        </div>
+
+        <div class="clock-grid">
+          <div class="clock-card">
+            <span class="clock-label">Brasil</span>
+            <strong id="clock-br-time">--:--:--</strong>
+            <span id="clock-br-date">--</span>
+          </div>
+          <div class="clock-card">
+            <span class="clock-label">Portugal</span>
+            <strong id="clock-pt-time">--:--:--</strong>
+            <span id="clock-pt-date">--</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="summary-row">
+        <article class="summary-card">
+          <span class="summary-label">Total de projetos</span>
+          <strong id="stat-projects">--</strong>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">Total de spools</span>
+          <strong id="stat-spools">--</strong>
+        </article>
+        <article class="summary-card summary-card--success">
+          <span class="summary-label">Concluídos</span>
+          <strong id="stat-completed">--</strong>
+        </article>
+        <article class="summary-card summary-card--warning">
+          <span class="summary-label">Em andamento</span>
+          <strong id="stat-in-progress">--</strong>
+        </article>
+        <article class="summary-card summary-card--danger">
+          <span class="summary-label">Não iniciados</span>
+          <strong id="stat-not-started">--</strong>
+        </article>
+        <article class="summary-card summary-card--accent">
+          <span class="summary-label">Média geral de progresso</span>
+          <strong id="stat-average">--</strong>
+        </article>
+      </section>
+
+      <main class="content-grid">
+        <section class="panel panel--table">
+          <div class="panel-head">
+            <div>
+              <h2>Projetos</h2>
+              <p>Lista compacta com rotação automática para exibição contínua em TV.</p>
+            </div>
+            <div class="panel-meta">
+              <span id="sheet-name">Smartsheet</span>
+              <span id="last-sync">Aguardando atualização...</span>
+            </div>
+          </div>
+
+          <div class="table-shell" id="table-shell">
+            <table class="projects-table">
+              <thead>
+                <tr>
+                  <th>Projeto</th>
+                  <th>Spools</th>
+                  <th>Peso (kg)</th>
+                  <th>Painting (m²)</th>
+                  <th>Etapa atual</th>
+                  <th>% Individual</th>
+                  <th>% Geral</th>
+                  <th>Status</th>
+                  <th>Fab. início</th>
+                  <th>Caldeiraria</th>
+                  <th>Solda</th>
+                  <th>Inspeção (QC)</th>
+                  <th>TH</th>
+                  <th>Concluído?</th>
+                </tr>
+              </thead>
+              <tbody id="projects-body">
+                <tr>
+                  <td colspan="14" class="loading-cell">Carregando projetos...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="panel panel--detail">
+          <div class="panel-head">
+            <div>
+              <h2>Projeto em destaque</h2>
+              <p>Expansão automática com paginação dos spools.</p>
+            </div>
+            <div class="autoplay-pill">AUTO</div>
+          </div>
+
+          <div id="detail-card" class="detail-card">
+            <div class="detail-placeholder">Aguardando dados do Smartsheet…</div>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="footer-bar">
+        <span>Atualização automática por Netlify Functions + Smartsheet API</span>
+        <span id="footer-version">Versão da sheet: --</span>
+      </footer>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
