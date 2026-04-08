@@ -37,21 +37,25 @@ function formatPercent(value) {
 }
 
 function uiStateLabel(stateValue) {
-  if (stateValue === "completed") return "Concluído";
+  if (stateValue === "completed") return "Finalizado";
   if (stateValue === "in_progress") return "Em produção";
   return "Não iniciado";
 }
 
 function translateProjectStatus(projectStatus, uiState) {
+  if (uiState === "completed") {
+    return "Finalizado";
+  }
+
   const normalized = String(projectStatus || "").trim().toUpperCase().replace(/\s+/g, " ");
   if (["ONGOING", "ON GOING", "IN PROGRESS", "EM PRODUCAO", "EM PRODUÇÃO"].includes(normalized)) {
     return "Em produção";
   }
   if (["ON HOLD", "HOLD", "PAUSED", "EM ESPERA"].includes(normalized)) {
-    return "Em espera";
+    return uiState === "not_started" ? "Em espera" : "Em produção";
   }
-  if (["COMPLETED", "DONE", "FINISHED", "CONCLUIDO", "CONCLUÍDO"].includes(normalized)) {
-    return "Concluído";
+  if (["COMPLETED", "DONE", "FINISHED", "CONCLUIDO", "CONCLUÍDO", "FINALIZADO"].includes(normalized)) {
+    return "Finalizado";
   }
   return projectStatus || uiStateLabel(uiState);
 }
@@ -261,7 +265,7 @@ function renderDetail() {
 
         <div class="detail-grid">
           <div class="metric-chip">
-            <span>Qtd. spools</span>
+            <span>Qtd. itens</span>
             <strong>${formatNumber(project.quantitySpools)}</strong>
           </div>
           <div class="metric-chip">
